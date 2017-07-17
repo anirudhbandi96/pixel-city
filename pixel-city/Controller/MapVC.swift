@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import Alamo
 
 class MapVC: UIViewController {
 
