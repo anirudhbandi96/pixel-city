@@ -12,6 +12,12 @@ import CoreLocation
 import Alamofire
 import AlamofireImage
 
+
+struct ImageData{
+    var id:String
+    var key:String
+}
+
 class MapVC: UIViewController, UIGestureRecognizerDelegate {
 
     @IBOutlet weak var mapView: MKMapView!
@@ -32,6 +38,7 @@ class MapVC: UIViewController, UIGestureRecognizerDelegate {
     
     var imageUrlArray = [String]()
     var imageArray = [UIImage]()
+    var imageData = [ImageData]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -187,6 +194,7 @@ extension MapVC: MKMapViewDelegate {
             for photo in photosDictArray {
                 let postUrl = "https://farm\(photo["farm"]!).staticflickr.com/\(photo["server"]!)/\(photo["id"]!)_\(photo["secret"]!)_h_d.jpg"
                 self.imageUrlArray.append(postUrl)
+                self.imageData.append(ImageData(id: photo["id"] as! String, key: photo["secret"] as! String))
             }
             handler(true)
         }
@@ -205,6 +213,8 @@ extension MapVC: MKMapViewDelegate {
             })
         }
     }
+    
+    
     
     func cancelAllSessions() {
         Alamofire.SessionManager.default.session.getTasksWithCompletionHandler { (sessionDataTask, uploadData, downloadData) in
@@ -241,6 +251,7 @@ extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoCell", for: indexPath) as? PhotoCell else { return UICollectionViewCell() }
         let imageFromIndex = imageArray[indexPath.row]
         let imageView = UIImageView(image: imageFromIndex)
+        imageView.contentMode = .scaleAspectFill
         cell.addSubview(imageView)
         return cell
     }
@@ -248,6 +259,7 @@ extension MapVC: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let popVC = storyboard?.instantiateViewController(withIdentifier: "PopVC") as? PopVC else { return }
         popVC.initData(forImage: imageArray[indexPath.row])
+        popVC.setupImageInfo(forImageid: imageData[indexPath.item].id, withSecretKey: imageData[indexPath.item].key)
         present(popVC, animated: true, completion: nil)
     }
 }
